@@ -1,7 +1,8 @@
 const User = require("../models/userModel");
 var bcrypt = require("bcryptjs");
 var salt = bcrypt.genSaltSync(10);
-const JWT=require('jsonwebtoken')
+const JWT=require('jsonwebtoken');
+const response=require('../helper/responceHelper');
 /**@export Routes */
 exports.usersave = usersave;
 exports.login = login;
@@ -15,31 +16,28 @@ async function forgetPass(req,res){
     console.log("inside the forget pass api ")
     const{email,answer,newPassword}=req.body;
     if(!email){
-        res.status(400).send({message:'Email is required'})
+      response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
     if(!answer){
-    res.status(400).send({message:'answer is required'});
+      response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }   
       if(!newPassword){
-        res.status(400).send({message:"plz enter new password"});
+        response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       }
       const user=await User.findOne({email:email,answer:answer});
       if(!user){
-        return res.status(400).send({
-          success:false,message:'wrong email or answer '
-        })
+        return    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       }
       const hased=await bcrypt.hashSync(newPassword, salt);
       await User.findByIdAndUpdate(user._id,{password:hased});
-      res.status(200).send({
-        success:true,
-        message:"password reset succesfuuly "
-      })
+      // res.status(200).send({
+      //   success:true,
+      //   message:"password reset succesfuuly "
+      // })
+      response.userResponce(res,"password reset succesfully",User);
     } catch (error) {
     console.log("error are in forgot pass api : ",error)
-    res.status(500).send({
-      success:false,message:'something wenrt wrong',error
-    })
+    response.errorResponse(res,REQUEST_VALIDATION_ERROR_KEY,error)
   }
 }
 
@@ -47,7 +45,8 @@ async function forgetPass(req,res){
 async function userAuth(req,res){
   try {
     console.log("are in protected Route function")
-    res.status(200).send({ok:true}); 
+    // res.status(200).send({ok:true}); 
+    response.userResponce(res,"userLogin",{ok:true})
   } catch (error) {
     console.log("error are in userAuth function : ",error);
   }
@@ -74,11 +73,10 @@ async function usersave(req, res) {
       userObj.password = bcrypt.hashSync(password, salt);
       await userObj.save();
       // res.status(200).json({ message: "user are registered", data:userObj });
-      res.status(200).send({success:true, message: "user are registered", userObj });
+      // res.status(200).send({success:true, message: "user are registered", userObj });
+      response.userResponce(res,"user are registered",userObj)
     } else {
-      res
-        .status(200)
-        .json({ success:false,data: checkUser, message: "Email are already exsit" });
+    response.responceFalse(res,"email are already store",checkUser)
     }
   } catch (error) {
     console.log("usercontroller/usersave: error  = ", error);
@@ -91,7 +89,7 @@ async function login(req, res) {
     var email = req.body.email;
     var password = req.body.password;
     if (!email) {
-      res.status(200).json({ message: "Empty req.body" });
+      response.userResponce(res,"Email not found",email);
     } else {
       var user = await User.findOne({ email: email });
       if (user) {
@@ -100,22 +98,17 @@ async function login(req, res) {
           const token=await JWT.sign({_id:user._id},process.env.SECRATE_KEY,{
             expiresIn:"7d",
           })
-          res
-            .status(200)
-            .send({ success:true,message: "Succesfully login",  user ,token});
+          var users={user:user,token:token}
+          response.userResponce(res,"Successfully login",users)
         } else {
-          res.status(200).json({success:false, message: "passWord never match" });
+          response.userResponce(res,"Pass not match",user)
         }
       } else {
-        res.status(200).json({ message: "no user found with this email " });
+        response.userResponce(res,"no user found with this mail ",email)
       }
     }
   } catch (error) {
-    res
-      .status(301)
-      .json({
-        message: `error are in login function   : ${error}`,
-      });
+    // response.errorResponse(res,VALIDATION_ERROR_KEY,error)
     console.log("error are in login function : ", error);
   }
 }

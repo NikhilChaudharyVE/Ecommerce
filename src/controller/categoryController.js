@@ -1,6 +1,7 @@
 const category=require("../models/categoryModel");
 // const {slugify} from 'slugify';
 const slugify = require('slugify');
+var response=require("../helper/responceHelper")
 
 /**@export functions */
 exports.createCategory=createCategory
@@ -14,34 +15,21 @@ async  function getCategory(req,res){
     try {
         var {id}=req.params
         var categories=await category.findById(id);
-        res.status(200).send({
-            success:true,
-            categories,
-            message:"find category by id "
-        })
+       
+        response.successResponse(res, categories);
     } catch (error) {
         console.log("error are in get all  category function : ",error)
-        res.status(400).send({
-            success:false,error,
-            message:"Error are in category function "
-        })
+        response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
 }
 /**@getallCategory function*/
 async  function getallCategory(req,res){
     try {
         var categories=await category.find({});
-        res.status(200).send({
-            success:true,
-            categories,
-            message:"all categires are find"
-        })
+        response.successResponse(res, categories);
     } catch (error) {
         console.log("error are in get all  category function : ",error)
-        res.status(400).send({
-            success:false,error,
-            message:"Error are in category function "
-        })
+        response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
 }
 /**@delete_category function*/
@@ -49,16 +37,10 @@ async function  deleteCategory(req,res){
     try {
         var {id}=req.params
         var deletecategory=await category.findByIdAndDelete(id);
-        res.status(200).send({
-            success:true,
-            deletecategory,success:"sucessfully deleted"
-        })
+        response.successResponse(res, deletecategory);
     } catch (error) {
         console.log("error are in delete category function : ",error)
-        res.status(400).send({
-            success:false,error,
-            message:"Error are in category function "
-        })
+        response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
 }
 /**@update category function*/
@@ -74,16 +56,10 @@ async function updateCategory(req,res){
         }
        
         var updatedCategory = await category.findByIdAndUpdate(id,obj,{new:true}); // this new true key word is used to updated in frontend
-        res.status(200).send({
-            success:true,updatedCategory,
-            message:"updated category  "
-        })
+        response.successResponse(res, updatedCategory);
     } catch (error) {
         console.log("error are in update category function : ",error)
-        res.status(400).send({
-            success:false,error,
-            message:"Error are in category function "
-        })
+        response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
 }
 /**@create category function*/
@@ -93,36 +69,23 @@ async function createCategory(req,res){
         console.log("req send name are : ",name)
         var slugname=slugify(name)
         if(!name){
-           return res.status(400).send({
-                success:false,
-                message:"plz provide name"
-            })
+           return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
         }
         else{
             const checkname=await category.findOne({slug:slugname});
             if(checkname){
-                return res.status(400).send({
-                    success:false,
-                    message:"this category name is already exsists"
-                })
+                return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
             }else{
                 var obj={
                     name,slug:slugname
                 }
                 const createdCategory=await new category(obj).save();
-                return res.status(200).send({
-                    success:true,
-                    message:"category are created",
-                    createdCategory
-                })
+                response.successResponse(res, createdCategory);
             }
         }
 
     } catch (error) {
         console.log("error are in categoryController function : ",error);
-        res.status(400).send({
-            success:false,error,
-            message:"Error are in category function "
-        })
+        response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
 }

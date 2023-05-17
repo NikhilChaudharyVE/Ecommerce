@@ -1,6 +1,8 @@
+const express=require('express')
 const product = require("../models/productModel");
 const slugify = require("slugify");
 const fs = require("fs");
+const response = require('../helper/responceHelper')
 /**@export functions */
 exports.deleteProduct = deleteProduct;
 exports.createProduct = createProduct;
@@ -44,18 +46,15 @@ async function searchProduct(req,res){
       },
       {
         $project: {
-          photo: 0 // Exclude the 'photo' field from the result
+          photo: 0 // Exclude photo
         }
       }
     ]);
 res.json(result);
+// responce.successResponce(result);
   } catch (error) {
     console.log("error are in ",error);
-    res.status(400).send({
-      success: false,
-      message: "error in per page ctrl",
-      error,
-    });
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }
 /**@productListController this function help for show the product of a page . */
@@ -69,34 +68,20 @@ async function productListController(req,res){
       .skip((page - 1) * perPage)
       .limit(perPage)
       .sort({ createdAt: -1 });
-    res.status(200).send({
-      success: true,
-      products,
-    });
+    response.successResponse(res, products);
   } catch (error) {
     console.log(error);
-    res.status(400).send({
-      success: false,
-      message: "error in per page ctrl",
-      error,
-    });
+    response.errorResponse(res,DUPLICATE_ERROR_KEY,error)
   }
 }
 /**@productCountController this function help for count the products in data base */
 async function productCountController(req,res){
   try {
     const total = await product.find({}).estimatedDocumentCount();
-    res.status(200).send({
-      success: true,
-      total,
-    });
+    response.successResponse(res, total);
   } catch (error) {
     console.log(error);
-    res.status(400).send({
-      message: "Error in product count",
-      error,
-      success: false,
-    });
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }
 /**@productFiltersController this filer help to filter controller with the help of filter functions */
@@ -107,17 +92,11 @@ async function productFiltersController  (req, res) {
     if (checked.length > 0) args.category = checked;
     if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
     const products = await product.find(args);
-    res.status(200).send({
-      success: true,
-      products,
-    });
+    response.successResponse(res,products)
   } catch (error) {
     console.log(error);
-    res.status(400).send({
-      success: false,
-      message: "Error WHile Filtering Products",
-      error,
-    });
+   
+    response.errorResponse(res,VALIDATION_ERROR,error)
   }
 };
 /**@updateProduct this fun is help to update the products the product in db where poductid pass  as a params*/
@@ -128,33 +107,19 @@ async function updateProduct(req, res) {
     var slug = slugify(name);
     switch (true) {
       case !name:
-        return res
-          .status(400)
-          .send({ success: false, message: "name is required" });
+        return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !slug:
-        return res
-          .status(400)
-          .send({ success: false, message: "slug name is require " });
+        return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !desciption:
-        return res
-          .status(400)
-          .send({ success: false, message: "description name is require " });
+        return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !price:
-        return res
-          .status(400)
-          .send({ success: false, message: "price name is require " });
+        return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !category:
-        return res
-          .status(400)
-          .send({ success: false, message: "category name is require " });
+        return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !quantity:
-        return res
-          .status(400)
-          .send({ success: false, message: "quantity name is require " });
+        return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case photo && photo.size > 1000000:
-        return res
-          .status(400)
-          .send({ success: false, message: "photo required with credential" });
+        return  response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
     var obj = { ...req.fields, slug: slug };
     const products = await product.findByIdAndUpdate(req.params.id, obj, {
@@ -164,16 +129,10 @@ async function updateProduct(req, res) {
       products.photo.data = fs.readFileSync(photo.path);
       products.photo.contentType = photo.type;
     }
-    res
-      .status(200)
-      .send({ success: true, message: "Succesfuuly Updated", products });
+      response.successResponse(res,products)
   } catch (error) {
     console.log("error are in update  function : ", error);
-    res.status(400).send({
-      success: false,
-      error,
-      message: "Error are in update function ",
-    });
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }
 /**@productPhoto this fun is help delete the product in db where poductid pass  as a params*/
@@ -181,18 +140,10 @@ async function deleteProduct(req, res) {
   try {
     var { id } = req.params;
     var deletePrdct = await product.findByIdAndDelete(id).select("-photo");
-    res.status(200).send({
-      success: true,
-      deletePrdct,
-      success: "sucessfully product deleted",
-    });
+    response.successResponse(res,deletePrdct)
   } catch (error) {
     console.log("error are in delete deletePrdct function : ", error);
-    res.status(400).send({
-      success: false,
-      error,
-      message: "Error are in deletePrdct function ",
-    });
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }
 /**@productPhoto this fun is help for find the product photo where poductid pass  as a params*/
@@ -207,10 +158,7 @@ async function productPhoto(req, res) {
     }
   } catch (error) {
     console.log("error are in image upload function : ", error);
-    res.status(400).send({
-      success: false,
-      message: "error are in poductphoto function ",
-    });
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }
 /**@findProductBySlugName this fun is help for find the product with slug nam as a params*/
@@ -221,18 +169,18 @@ async function findProductBySlugName(req, res, next) {
       .findOne({ slug: slug })
       .populate("category")
       .select("-photo");
-    res.status(200).send({
-      success: true,
-      counTotal: products.length,
-      message: "all related product are ",
-      products,
-    });
+    // res.status(200).send({
+    //   success: true,
+    //   counTotal: products.length,
+    //   message: "all related product are ",
+    //   products,
+    // });
+    response.successResponse(res,products)
   } catch (error) {
     console.log("error are in findProductBySlugName function : ", error);
-    res
-      .status(500)
-      .send({ success: false, message: "error are occur in bckend", error });
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
+  
 }
 /**@getAllProduct function get all product from db */
 async function getAllProduct(req, res) {
@@ -243,18 +191,11 @@ async function getAllProduct(req, res) {
       .select("-photo")
       .limit(7)
       .sort({ createdAt: -1 });
-    res.status(200).send({
-      success: true,
-      counTotal: allProducts.length,
-      message: "all products are ",
-      allProducts,
-    });
+    
+    response.successResponse(res,allProducts)
   } catch (error) {
     console.log("error are in controller get all product function ", error);
-    res.status(400).send({
-      success: false,
-      message: "error are in getAllProduct this api  ",
-    });
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }
 /**@createProduct function for create product */
@@ -266,33 +207,19 @@ async function createProduct(req, res) {
     var slug = slugify(name);
     switch (true) {
       case !name:
-        return res
-          .status(400)
-          .send({ success: false, message: "name is required" });
+        return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !slug:
-        return res
-          .status(400)
-          .send({ success: false, message: "slug name is require " });
+        return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !desciption:
-        return res
-          .status(400)
-          .send({ success: false, message: "description name is require " });
+        return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !price:
-        return res
-          .status(400)
-          .send({ success: false, message: "price name is require " });
+        returnresponse.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !category:
-        return res
-          .status(400)
-          .send({ success: false, message: "category name is require " });
+        return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
       case !quantity:
-        return res
-          .status(400)
-          .send({ success: false, message: "quantity name is require " });
+        return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error);
       case photo && photo.size > 1000000:
-        return res
-          .status(400)
-          .send({ success: false, message: "photo required with credential" });
+        return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
     }
     var obj = { ...req.fields, slug: slug };
     const products = new product(obj);
@@ -301,15 +228,10 @@ async function createProduct(req, res) {
       products.photo.contentType = photo.type;
     }
     await products.save();
-    res
-      .status(200)
-      .send({ success: true, message: "Succesfuuly created", products });
+    response.successResponse(res,products)
+
   } catch (error) {
     console.log("error are in poductController function : ", error);
-    res.status(400).send({
-      success: false,
-      error,
-      message: "Error are in product function ",
-    });
+    return response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }
