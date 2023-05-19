@@ -1,6 +1,6 @@
 import React, { useState }from "react";
 import Layout from "../../components/Layout/Layout";
-import axios from "axios";
+import { forgotPassApi } from "../../config/UserApi";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import "../../styles/AuthStyles.css";
@@ -15,11 +15,11 @@ const ForgotPassword = () =>{
     const handleSubmit = async (e) => {
       e.preventDefault();
       try {
-        const res = await axios.post("http://localhost:4000/forget-password", {
+        const res = await forgotPassApi(
           email,
           newPassword,
           answer,
-        });
+        );
         if (res && res.data.success) {
           toast.success(res.data && res.data.message);
   

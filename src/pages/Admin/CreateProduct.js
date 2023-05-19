@@ -2,8 +2,8 @@ import React,{useState,useEffect} from "react";
 import Layout from "../../components/Layout/Layout";
 import AdminMenu from "../../components/Layout/AdminMenu";
 import toast from "react-hot-toast";
-import axios from "axios";
-import { useNavigate } from "react-router-dom"; 
+import {Api,createdProductApi,getAllCategoryURL} from "../../config/Api";
+import { useNavigate} from "react-router-dom"; 
 import { Select } from "antd";
 const { Option } = Select;
 const CreateProduct=()=>{
@@ -20,9 +20,7 @@ const CreateProduct=()=>{
 
     const getAllCategory = async () => {
         try {
-          const { data } = await axios.get(
-            "http://localhost:4000/category/allcategory"
-          );
+          const { data } = await getAllCategoryURL();
           if (data?.success) {
             setCategories(data?.data);
           }
@@ -49,10 +47,7 @@ const handleCreate = async (e) => {
       productData.append("category", category);
      productData.append("shipping", shipping);
 
-      const { data } =await axios.post(
-        "http://localhost:4000/product/createProduct",
-        productData
-      );
+      const { data } =await createdProductApi(productData);
       if (data?.success) {
         toast.success("new peoduct created ");
         navigate("/dashboard/admin/products");

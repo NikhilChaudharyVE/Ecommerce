@@ -2,7 +2,7 @@ import React,{useState,useEffect} from "react";
 import Layout from "../../components/Layout/Layout";
 import AdminMenu from "../../components/Layout/AdminMenu";
 import toast from "react-hot-toast";
-import axios from "axios";
+import {Api,getAllCategoryURL,deleteProduct,getProductData,getProductPhotoURL,updateProduct} from "../../config/Api";
 import { useNavigate,useParams } from "react-router-dom";
 import { Select } from "antd";
 const { Option } = Select;
@@ -23,11 +23,9 @@ const UpdateProduct=()=>{
 
     const getAllCategory = async () => {
         try {
-          const { data } = await axios.get(
-            "http://localhost:4000/category/allcategory"
-          );
+          const { data } = await getAllCategoryURL();
           if (data?.success) {
-            setCategories(data?.categories);
+            setCategories(data?.data);
           }
         } catch (error) {
           console.log(error);
@@ -36,7 +34,7 @@ const UpdateProduct=()=>{
       };
     const getSingleProduct = async ()=>{
         try {
-            const {data}=await axios.get(`http://localhost:4000/product/product/${params.slug}`);
+            const {data}=await getProductData(params.slug);
             setName(data.data.name);
             setId(data.data._id);
             setDesciption(data.data.desciption);
@@ -66,8 +64,8 @@ const UpdateProduct=()=>{
         productData.append("category", category);
        productData.append("shipping", shipping);
   
-        const { data } =await axios.put(
-          `http://localhost:4000/product/updateProduct/${id}`,
+        const { data } =await updateProduct(
+          id,
           productData
         );
         if (data?.success) {
@@ -87,9 +85,7 @@ const handleDelete = async () => {
   try {
     let answer = window.prompt("--->>> Are You Sure want to delete this product ? ");
     if (!answer) return;
-    const { data } = await axios.delete(
-      `http://localhost:4000/product/deleteProduct/${id}`
-    );
+    const { data } = await deleteProduct(id);
     toast.success("Product DEleted Succfully");
     navigate("/dashboard/admin/products");
   } catch (error) {
@@ -160,7 +156,7 @@ return(<Layout title={"Dashboard - Create Product"}>
                 ) : (
                   <div className="text-center">
                     <img
-                     src={`http://localhost:4000/product/productphoto/${id}`}
+                     src={getProductPhotoURL(id)}
                       alt="product_photo"
                       height={"200px"}
                       className="img img-responsive"

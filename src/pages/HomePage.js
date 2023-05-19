@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Checkbox, Radio } from "antd";
 import { Prices } from "../components/Prices";
 
-import axios from "axios";
+import Api,{getProductPhotoURL,getAllCategoryURL,allProductCount,allProduct,productFilter} from "../config/Api";
 
 import Layout from "./../components/Layout/Layout";
 
@@ -22,9 +22,8 @@ const HomePage = () => {
   // all category get function 
   const getAllCategory = async () => {
     try {
-        const { data } = await axios.get(
-            "http://localhost:4000/category/allcategory"
-          );
+        
+        const { data } = await getAllCategoryURL();
           if (data?.success) {
             setCategories(data?.data);
           }
@@ -35,7 +34,7 @@ const HomePage = () => {
   // total COunt function 
   const getTotal = async () => {
     try {
-      const { data } = await axios.get("http://localhost:4000/product/product-count");
+      const { data } = await allProductCount();
       setTotal(data?.data);
     } catch (error) {
       console.log(error);
@@ -51,7 +50,7 @@ const HomePage = () => {
   const getAllProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`http://localhost:4000/product/product-list/${page}`);
+      const { data } = await allProduct(page);
       setLoading(false);
       setProducts(data.data);
 
@@ -71,7 +70,7 @@ const HomePage = () => {
   const loadMore = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`http://localhost:4000/product/product-list/${page}`);
+      const { data } = await allProduct(page);
       setLoading(false);
       setProducts([...products, ...data?.data]);
     } catch (error) {
@@ -104,10 +103,7 @@ const HomePage = () => {
   //get filterd product
   const filterProduct = async () => {
     try {
-      const { data } = await axios.post("http://localhost:4000/product/product-filters", {
-        checked,
-        radio,
-      });
+      const { data } = await productFilter(checked,radio)
       setProducts(data?.data);
     } catch (error) {
       console.log(error);
@@ -162,7 +158,7 @@ const HomePage = () => {
             {products?.map((p) => (
               <div className="card m-2" key={p._id}>
                 <img
-                  src={`http://localhost:4000/product/productphoto/${p._id}`}
+                  src={getProductPhotoURL(p._id)} 
                   className="card-img-top"
                   alt={p.name}
                 />

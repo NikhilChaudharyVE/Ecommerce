@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout/Layout";
 import AdminMenu from "../../components/Layout/AdminMenu";
-import axios from "axios";
+import {Api,allProduct,getProductPhotoURL,getallproducts} from "../../config/Api";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 const Products = () => {
@@ -10,7 +10,7 @@ const Products = () => {
   //getall products 
   const getAllProducts = async () => {
     try {
-      const { data } = await axios.get("http://localhost:4000/product/allproduct");
+      const { data } = await getallproducts();
       setProducts(data.data);
     } catch (error) {
       console.log(error);
@@ -39,7 +39,7 @@ const Products = () => {
               >
                 <div className="card m-2" style={{ width: "18rem" }}>
                   <img
-                    src={`http://localhost:4000/product/productphoto/${p._id}`}
+                    src={getProductPhotoURL(p._id)}
                     className="card-img-top"
                     alt={p.name}
                   />

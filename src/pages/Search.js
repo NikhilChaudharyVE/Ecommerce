@@ -1,6 +1,7 @@
 import React from "react";
 import Layout from "./../components/Layout/Layout";
 import { useSearch } from "../context/search";
+import{getProductPhotoURL} from '../config/Api'
 const Search = () => {
   const [values, setValues] = useSearch();
   return (
@@ -17,7 +18,7 @@ const Search = () => {
             {values?.results.map((p) => (
               <div className="card m-2" style={{ width: "18rem" }}>
                 <img
-                  src={`http://localhost:4000/product/productphoto/${p._id}`}
+                  src={getProductPhotoURL(p._id)}
                   className="card-img-top"
                   alt={p.name}
                 />

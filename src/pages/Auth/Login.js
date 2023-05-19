@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Layout from "./../../components/Layout/Layout";
-import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
+import { loginApi } from "../../config/UserApi";
 import "../../styles/AuthStyles.css";
 import { useAuth } from "../../context/auth";
 const Login = () => {
@@ -17,10 +17,10 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const {data} = await axios.post("http://localhost:4000/login", {
+      const {data} = await loginApi(
         email,
         password,
-      });
+      );
       console.log("here ",data)
       if (data && data.success) {
         console.log("re",data.data.user,"resp",data.message)
@@ -31,8 +31,6 @@ const Login = () => {
           token: data.data.token,
         });
         localStorage.setItem("auth", data.data.user);
-        // localStorage.setItem("auth", JSON.stringify(res.data.user));
-      //   // navigate( "/");
         navigate(location.state || "/");
       } else {
         toast.error("Something Wrong");
