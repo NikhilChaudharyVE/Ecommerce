@@ -3,6 +3,7 @@ var bcrypt = require("bcryptjs");
 var salt = bcrypt.genSaltSync(10);
 const JWT=require('jsonwebtoken');
 const response=require('../helper/responceHelper');
+let{NOT_FOUND_ERROR_KEY,VALIDATION_ERROR}=require('../helper/responceHelper');
 /**@export Routes */
 exports.usersave = usersave;
 exports.login = login;
@@ -30,10 +31,6 @@ async function forgetPass(req,res){
       }
       const hased=await bcrypt.hashSync(newPassword, salt);
       await User.findByIdAndUpdate(user._id,{password:hased});
-      // res.status(200).send({
-      //   success:true,
-      //   message:"password reset succesfuuly "
-      // })
       response.userResponce(res,"password reset succesfully",User);
     } catch (error) {
     console.log("error are in forgot pass api : ",error)
@@ -45,7 +42,6 @@ async function forgetPass(req,res){
 async function userAuth(req,res){
   try {
     console.log("are in protected Route function")
-    // res.status(200).send({ok:true}); 
     response.userResponce(res,"userLogin",{ok:true})
   } catch (error) {
     console.log("error are in userAuth function : ",error);
@@ -58,7 +54,7 @@ async function usersave(req, res) {
   try {
     
     var { firstName, lastName, phone,address,answer, email, password } = req.body;
-    console.log("data are : ",firstName,lastName,phone,answer,password,address)
+    console.log("data are : ",firstName,lastName,phone,answer,password,address,email)
 
     var checkUser = await User.findOne({ email: email });
     if (!checkUser) {
@@ -72,8 +68,6 @@ async function usersave(req, res) {
       userObj.address = address;
       userObj.password = bcrypt.hashSync(password, salt);
       await userObj.save();
-      // res.status(200).json({ message: "user are registered", data:userObj });
-      // res.status(200).send({success:true, message: "user are registered", userObj });
       response.userResponce(res,"user are registered",userObj)
     } else {
     response.responceFalse(res,"email are already store",checkUser)

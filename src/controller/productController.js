@@ -1,8 +1,10 @@
 const express=require('express')
 const product = require("../models/productModel");
 const slugify = require("slugify");
+const mongoose = require('mongoose');
 const fs = require("fs");
-const response = require('../helper/responceHelper')
+const response = require('../helper/responceHelper');
+let{NOT_FOUND_ERROR_KEY,VALIDATION_ERROR}=require('../helper/responceHelper');
 /**@export functions */
 exports.deleteProduct = deleteProduct;
 exports.createProduct = createProduct;
@@ -14,18 +16,32 @@ exports.productFiltersController=productFiltersController;
 exports.productCountController=productCountController;
 exports.productListController=productListController;
 exports.searchProduct=searchProduct;
-
+exports.similarProduct=similarProduct;
+/**@similarProduct  this function is used for find similar producs of same ctegory .*/
+async function similarProduct(req,res,next){
+  try {
+    var productId=req.params.pid;
+    var categoryId=req.params.cid;
+    console.log("product",productId,"categoryId",categoryId);
+    if(productId &&categoryId){
+    const validProductId =new mongoose.Types.ObjectId(productId);
+    const similarProduct=await product.find({ category: categoryId , _id: { $ne: validProductId } })
+    .populate('category')
+    .select('-photo')
+    .limit(3);
+    response.successResponse(res, similarProduct);
+    }
+    else{
+      response.responceFalse(res,"email are already store",categoryId);
+    }
+  } catch (error) {
+    console.log("error are in Similar product functiom : ");
+  }
+}
 /**@searchProduct this function is help for search product by search name and description also .*/
 async function searchProduct(req,res){
   try {
     const{keyword}=req.params;
-    // const result=await product.find({
-    //   $or:[
-    //     {name:{$regex:keyword,$options:"i"}},
-    //     {desciption:{$regex:keyword,$options:"i"}},
-    //     {"category.name":{$regex:keyword,$options:"i"}}
-    //   ]
-    // }).select("-photo").populate('category', 'name');
     const result = await product.aggregate([
       {
         $lookup: {
@@ -51,7 +67,6 @@ async function searchProduct(req,res){
       }
     ]);
 res.json(result);
-// responce.successResponce(result);
   } catch (error) {
     console.log("error are in ",error);
     response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
@@ -169,12 +184,6 @@ async function findProductBySlugName(req, res, next) {
       .findOne({ slug: slug })
       .populate("category")
       .select("-photo");
-    // res.status(200).send({
-    //   success: true,
-    //   counTotal: products.length,
-    //   message: "all related product are ",
-    //   products,
-    // });
     response.successResponse(res,products)
   } catch (error) {
     console.log("error are in findProductBySlugName function : ", error);
@@ -189,7 +198,6 @@ async function getAllProduct(req, res) {
       .find({})
       .populate("category")
       .select("-photo")
-      .limit(7)
       .sort({ createdAt: -1 });
     
     response.successResponse(res,allProducts)

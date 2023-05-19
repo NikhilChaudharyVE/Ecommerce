@@ -4,12 +4,8 @@ const dotenv = require('dotenv')
 const passport = require('passport');
 const session = require('express-session')
 const cors = require('cors');
-// const LocalStrategy = require('passport-local').Strategy;
 const connectDB=require("../config/connection");
 const userRoutes=require('./routes/routes');
-// const adminRoutes=require('./routes/adminRoutes');
-// const category=require("./routes/categoryRoutes");
-// const product=require("./routes/productRoutes");
 const fileupload=require('express-fileupload');
 
 require('../config/passport')(passport)
@@ -32,9 +28,6 @@ app.use(passport.initialize())
 app.use(passport.session())
 // routes 
 app.use("/",userRoutes);
-// app.use("/category",category)
-// app.use("/product",product)
-// app.use("/admin",adminRoutes)
 app.use(fileupload());
 const port=process.env.PORT
 app.listen(port,()=>{

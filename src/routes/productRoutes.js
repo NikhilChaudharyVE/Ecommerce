@@ -22,6 +22,6 @@ router.get("/product-list/:page", controller.productListController);
 // search functionality for search products
 router.get("/search/:keyword",controller.searchProduct);
 // similar products Route 
-// router.post("/similar_product/:pid/:Cid",controller.similarProduct)
+router.get(`/similar_product/:pid/:cid`,controller.similarProduct)
 
 module.exports=router; 
