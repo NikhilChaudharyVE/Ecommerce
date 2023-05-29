@@ -23,7 +23,6 @@ export const allProductCount = async () => {
 };
 // get all products functon
  const allProduct = async (page) => {
-  console.log("ALl products")
   const allProduct = await axios.get(
     `${productUrl}/product-list/${page}`
   );
@@ -31,7 +30,7 @@ export const allProductCount = async () => {
 };
 // rpoduct filer api
 export const productFilter = async (checked, radio) => {
-  const products = await axios.post(`${productUrl}/product-filters`, {
+  const products = await axios.post(`${productUrl}/product-filters`,{
     checked,
     radio,
   });
@@ -95,11 +94,30 @@ return product;
 }
 // get similar Product funcion
 const getAllSimilarProduct=async(pid,cid)=>{
-  console.log("url are : ",`${productUrl}/similar_product/${pid}/${cid}`)
   const product=await axios.get(`${productUrl}/similar_product/${pid}/${cid}`)
   return product;
 }
+
+// get all product from Category 
+const getAllProductByCategory=async(slug)=>{
+const product=await axios.get(`${productUrl}/allProuctOfCategory/${slug}`)   
+return product;
+}
+// payment gate way token function
+const getPaymentToken=async()=>{
+  const { Token} = await axios.get(`${productUrl}/braintree/token`);
+  // console.log("payment token are : ", Token )
+  return Token;
+}
+// handle Payment Function
+const handlePaymentRequest=async(nonce,cart)=>{
+const paymnet= await axios.post(`${productUrl}/braintree/payment`,{nonce,cart})
+return paymnet;
+}
 export { Api,
+  handlePaymentRequest,
+  getPaymentToken,
+  getAllProductByCategory,
   deleteProduct,
   getAllSimilarProduct,
   getallproducts,

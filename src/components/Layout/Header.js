@@ -1,12 +1,30 @@
-import React from "react";
+import React,{useState,useEffect} from "react";
 import{NavLink,Link} from'react-router-dom'
 import{GiShop} from 'react-icons/gi'
 import {useAuth} from'../../context/auth'
 import toast from 'react-hot-toast'
 import SearchInput from "../Form/SearchInput";
-import categories from "../../hooks/useCategory";
+import { getAllCategoryURL } from "../../config/Api";
+// import useCategory from "../../hooks/useCategory";
+import{Badge} from "antd";
+import { useCart } from "../../context/cart";
+
 const Header = () =>{
   const[auth,setAuth]=useAuth()
+ const[cart]=useCart();
+  const [category,setCategory]= useState([]);
+  const getAllCategory = async()=>{
+    try {
+      const {data} =await getAllCategoryURL();
+      setCategory(data?.data);
+    } catch (error) {
+      console.log("error are in hader.js",error);
+      toast.error("Something Went Wrong ");
+    }
+  }
+  useEffect(()=>{
+    getAllCategory();
+  },[])
   const  handleLogout =()=>{
     setAuth({
       ...auth,
@@ -46,30 +64,30 @@ const Header = () =>{
           </NavLink>
         </li>
         <li className="nav-item dropdown">
-                <Link
-                  className="nav-link dropdown-toggle"
-                  to={"/categories"}
-                  data-bs-toggle="dropdown"
-                >
-                  Categories
-                </Link>
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link className="dropdown-item" to={"/categories"}>
-                      All Categories
-                    </Link>
-                  </li>
-                  {categories?.map((c) => (
+                  <NavLink
+                    className="nav-link dropdown-toggle"
+                    to={"/Category"}
+                    data-bs-toggle="dropdown"
+                  >
+                    Categories
+                  </NavLink>
+                  <ul className="dropdown-menu">
                     <li>
-                      <Link
-                        className="dropdown-item"
-                        // to={`/category/${c.slug}`}
-                      >
-                        {c.name}
-                      </Link>
+                      <NavLink className="dropdown-item" to={"/Category"}>
+                        All Categories
+                      </NavLink>
                     </li>
-                  ))}
-                </ul>
+                    {category?.map((c) => (
+                     <li> 
+                         <NavLink 
+                           className="dropdown-item" 
+                           to={`/Category/${c.slug}`} 
+                        > 
+                         {c.name} 
+                        </NavLink> 
+                     </li>
+                    ))} 
+                  </ul>
               </li>
         {!auth.user ? (<>
           <li className="nav-item">
@@ -100,7 +118,7 @@ const Header = () =>{
                         <NavLink 
                         // to='/dashboard'
                           to={`/dashboard/${
-                            auth?.user?.userType === 1 ? "admin" : "user"
+                            auth?.user?.userType == 1 ? "admin" : "user"
                           }`}
                           className="dropdown-item"
                         >
@@ -122,13 +140,13 @@ const Header = () =>{
           
           </>)}
        
-        <li className="nav-item">
-          <NavLink to="/cart" className="nav-link" href="#">
-            CArt (0)
-          </NavLink>
-        </li>
-       
-       
+          <li className="nav-item">
+                <NavLink to="/cart" className="nav-link">
+                  <Badge count={cart?.length} showZero offset={[10, -5]}>
+                    Cart
+                  </Badge>
+                </NavLink>
+              </li>
       </ul>
     
     </div>

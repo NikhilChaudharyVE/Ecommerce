@@ -21,7 +21,6 @@ const Login = () => {
         email,
         password,
       );
-      console.log("here ",data)
       if (data && data.success) {
         console.log("re",data.data.user,"resp",data.message)
         toast.success(data.message);
@@ -30,7 +29,7 @@ const Login = () => {
           user: data.data.user,
           token: data.data.token,
         });
-        localStorage.setItem("auth", data.data.user);
+        localStorage.setItem("auth", JSON.stringify(data.data.user));
         navigate(location.state || "/");
       } else {
         toast.error("Something Wrong");

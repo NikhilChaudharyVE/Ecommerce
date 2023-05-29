@@ -28,6 +28,10 @@ import Products from './pages/Admin/Products';
 import UpdateProduct from './pages/Admin/UpdateProduct';
 import Search from './pages/Search';
 import ProductDetails from './pages/ProductDetails';
+import Category from './pages/Category';
+import CategoryProduct from './pages/CategoryProduct';
+import CartPage from './pages/CartPage';
+import LoginPage from './pages/LoginPage';
 
 // import { Spinner } from 'react-bootstrap';
 // import Spinner from './components/Spinner';
@@ -37,12 +41,16 @@ function App() {
    
     <>
 <Routes>
+  <Route path="/LoginPage" element={<LoginPage/>}/>
   <Route path="/" element={<HomePage/>}/>
   <Route path="/search" element={<Search/>}/>
   <Route path="/product/:slug" element={<ProductDetails/>}/>
   <Route path="/about" element={<About/>}/>
   <Route path="/register" element={<Register/>}/>
+  <Route path="/cart" element={<CartPage/>}/>
   <Route path="/login" element={<Login/>}/>
+  <Route path="/Category" element={<Category/>}/>
+  <Route path="/Category/:slug" element={<CategoryProduct/>}/>
 {/*  protected route  function in dashbaord page */}
   <Route path="/dashboard" element={<PrivateRoute/>}>
   <Route path="user" element={<Dashboard/>}/>

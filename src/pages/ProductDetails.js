@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../components/Layout/Layout";
 import toast from "react-hot-toast";
+import { useCart } from "../context/cart"
 import Api, {
   getProductData,
   getProductPhotoURL,
@@ -9,9 +10,10 @@ import Api, {
 import { useParams } from "react-router-dom";
 const ProductDetails = () => {
   const params = useParams();
+  const [cart, setCart] = useCart();
   const [product, setProduct] = useState({});
   const [cat, setCat] = useState({});
-  const[category,setCategory]=useState([]);
+  const [category, setCategory] = useState([]);
   useEffect(() => {
     if (params?.slug) {
       getProduct();
@@ -31,12 +33,12 @@ const ProductDetails = () => {
     }
   };
 
- 
+
   const similarProduct = async () => {
     try {
-     
+
       const { data } = await getAllSimilarProduct(product._id, cat._id);
-setCategory(data?.data)
+      setCategory(data?.data)
     } catch (error) {
       toast.error("similarProductErr");
       console.log("error are in Similar Product : ", error);
@@ -57,7 +59,6 @@ setCategory(data?.data)
       >
         Prduct Details page{" "}
       </h2>
-      {JSON.stringify(product, null, 4)}
       <div className="row container mt-2">
         <div className="col-md-6">
           {product._id ? (
@@ -78,7 +79,14 @@ setCategory(data?.data)
           <h5>desciption : {product.desciption}</h5>
           {/* <h5>category : {product.category.name}</h5> */}
           <h5>category : {cat.name}</h5>
-          <button className="btn btn-secondary ms-1">add cart</button>
+          <button className="btn btn-success ms-1"
+            onClick={() => {
+              setCart([...cart, product]);
+              localStorage.setItem("cart",
+                JSON.stringify([...cart, product]));
+              toast.success("Item Added to cart");
+            }}
+          >Add Cart</button>
         </div>
       </div>
       <h3
@@ -107,11 +115,11 @@ setCategory(data?.data)
                 <div className="card-name-price">
                   <h5 className="card-title">{p.name}</h5>
                   <h5 className="card-title card-price">
-                    {/* {p.price.toLocaleString("en-US", {
+                    {p.price.toLocaleString("en-IN", {
                       style: "currency",
-                      currency: "USD",
-                    })} */}
-                    Amount :{p.price}
+                      currency: "IND",
+                    })}
+
                   </h5>
                 </div>
                 <p className="card-text ">
@@ -124,12 +132,12 @@ setCategory(data?.data)
                   >
                     More Details
                   </button> */}
-                  </div>
-               </div>
-                  </div>
-                 ) )}
-                  </div>
-                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </Layout>
   );
 };

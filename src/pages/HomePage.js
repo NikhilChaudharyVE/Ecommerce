@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Checkbox, Radio } from "antd";
 import { Prices } from "../components/Prices";
-
+import { useCart } from "../context/cart";
 import Api,{getProductPhotoURL,getAllCategoryURL,allProductCount,allProduct,productFilter} from "../config/Api";
-
+import toast from 'react-hot-toast'
 import Layout from "./../components/Layout/Layout";
+// import{AiOutline}
 
 
 const HomePage = () => {
   const navigate = useNavigate();
-//   const [cart, setCart] = useCart();
+  const [cart, setCart] = useCart();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [checked, setChecked] = useState([]);
@@ -148,7 +149,7 @@ const HomePage = () => {
               className="btn btn-danger"
               onClick={() => window.location.reload()}
             >
-              RESer Filter
+              RESet Filter
             </button>
           </div>
         </div>
@@ -163,16 +164,7 @@ const HomePage = () => {
                   alt={p.name}
                 />
                 <div className="card-body">
-                  {/* <div className="card-name-price">
-                    <h5 className="card-title">{p.name}</h5>
-                    <h5 className="card-title card-price">
-                      {p.price.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                      })
-                    }
-                    </h5>
-                  </div> */}
+                  
                   <p className="card-text ">
                     {p.desciption.substring(0, 60)}
                   </p>
@@ -187,7 +179,7 @@ const HomePage = () => {
                     >
                       More detail
                     </button>
-                    {/* <button
+                    <button
                       className="btn btn-dark ms-1"
                       onClick={() => {
                         setCart([...cart, p]);
@@ -199,7 +191,7 @@ const HomePage = () => {
                       }}
                     >
                       ADD TO CART
-                    </button> */}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -214,7 +206,6 @@ const HomePage = () => {
                   setPage(page + 1);
                 }}
               >
-             
                 {loading ? "...loading ...":"loadmore  "}
               </button>
             )}

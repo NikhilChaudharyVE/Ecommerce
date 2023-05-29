@@ -23,4 +23,11 @@ const UserApi=axios.create({
         });
         return register;
         }
-export { UserApi, forgotPassApi,loginApi ,userRegisterApi};
+        // user update proile Api 
+        const userUpdateApi=async (firstName,lastName,email,password,phone,address) => {
+            const user=await axios.put(`${apiBaseUrl}/updateProfile`,{
+                firstName,lastName,email,password,phone,address
+            });
+            return user;
+        }
+export { UserApi, userUpdateApi,forgotPassApi,loginApi ,userRegisterApi};
