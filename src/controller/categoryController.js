@@ -46,10 +46,8 @@ async function  deleteCategory(req,res){
 /**@update category function*/
 async function updateCategory(req,res){
     try {
-        console.log("inside the updateCategory function ")
         var {name}=req.body
         var {id}=req.params
-        console.log('object are : ',name,id)
         var slugname=slugify(name);
         var obj={
             name,slug:slugname,updatedAt:Date.now()

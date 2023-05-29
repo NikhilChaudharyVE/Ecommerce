@@ -6,7 +6,7 @@ const  {authMidle,adminacess}= require('../middleware/auth')
 router.post('/login',usercontroller.login);
 router.post('/signup',usercontroller.usersave);
 router.get('/user-auth',authMidle,usercontroller.userAuth)
-
+router.put("/updateProfile",usercontroller.updateProfile)
 router.post("/forget-password",usercontroller.forgetPass)
 router.get('/test',authMidle,adminacess,function(req,res){
     res.send("test route is running")

@@ -1,10 +1,22 @@
 const express=require('express')
 const product = require("../models/productModel");
+const Order = require("../models/orderModel")
 const slugify = require("slugify");
 const mongoose = require('mongoose');
+var braintree = require("braintree");
+const dotenv=require('dotenv')
 const fs = require("fs");
 const response = require('../helper/responceHelper');
 let{NOT_FOUND_ERROR_KEY,VALIDATION_ERROR}=require('../helper/responceHelper');
+/**@PAYMENT_GATEWAY  funciton are here  */
+dotenv.config({ path: './config/config.env' })
+var gateway = new braintree.BraintreeGateway({
+  environment: braintree.Environment.Sandbox,
+  merchantId: process.env.BRAINTREE_MERCHANT_ID,
+  publicKey: process.env.BRAINTREE_PUBLIC_KEY,
+  privateKey: process.env.BRAINTREE_PRIVATE_KEY,
+});
+
 /**@export functions */
 exports.deleteProduct = deleteProduct;
 exports.createProduct = createProduct;
@@ -17,12 +29,103 @@ exports.productCountController=productCountController;
 exports.productListController=productListController;
 exports.searchProduct=searchProduct;
 exports.similarProduct=similarProduct;
+exports.getAllProductBySlug=getAllProductBySlug;
+exports.braintreeTokenController=braintreeTokenController;
+exports.paymentController=paymentController;
+/**@paymentController function for handle the payments  */
+async function paymentController(eq,res) {
+  try {
+    const{cart,nonce}=req.body;
+    const total=0;
+    cart.map((i)=>{
+      total+=i.price;
+    });
+    let newTransection=gateway.transaction.sale({
+amount:total,
+paymentMethodNonce:nonce,
+options:{
+  submitForSettlement:true,
+}
+    } ,
+    function(err,result){
+    if(result){
+      const order =new Order({
+        products:cart,
+        payment:result,buyer:req.user._id
+      }).save();
+      response.successResponse(res,{ok:true})
+    }else{
+      response.errorResponse(res,"error are in payment ethod of backend",error);
+    }
+    }
+    )
+  } catch (error) {
+    console.log("error are in payment function : ",error);
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error);
+  }
+}
+
+/**@braintreeTokenController this function is hel for managed token for braintree function  */
+async  function braintreeTokenController(req,res){
+  try {
+    gateway.clientToken.generate({},function (err,responce){
+      if(err){
+      console.log("error inside the create token function :- ",err);
+      response.errorResponse(res,NOT_FOUND_ERROR_KEY,err);
+    }else{
+      console.log("Token are created : ")
+      // response.successResponse(res,{ok:true,token:responce.clientToken});
+    response.successResponse(res,responce.clientToken);
+    }
+    })
+  } catch (error) {
+    console.log("error are in braintree function : ",error );
+    response.errorResponse(res,NOT_FOUND_ERROR_KEY,error);
+    }
+}
+
+/**@getAllProduct this fun is help to get all category  .*/
+async function getAllProductBySlug(req, res) {
+  try {
+    const categorySlug = req.params.slug;
+    const products = await product.aggregate([
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+        },
+      },
+      {
+        $unwind: "$category",
+      },
+      {
+        $match: {
+          "category.slug": categorySlug,
+        },
+      },  {
+        $project: {
+          _id: 1,
+          name: 1,
+          price:1,
+          category:1,
+          shipping:1,
+          desciption:1,slug:1
+        },
+      },
+    ]);
+    response.successResponse(res, products);
+  } catch (error) {
+    console.log("Error in getAllProductByCategorySlug", error);
+    response.errorResponse(res, NOT_FOUND_ERROR_KEY, error);
+  }
+}
 /**@similarProduct  this function is used for find similar producs of same ctegory .*/
 async function similarProduct(req,res,next){
   try {
     var productId=req.params.pid;
     var categoryId=req.params.cid;
-    console.log("product",productId,"categoryId",categoryId);
     if(productId &&categoryId){
     const validProductId =new mongoose.Types.ObjectId(productId);
     const similarProduct=await product.find({ category: categoryId , _id: { $ne: validProductId } })
@@ -35,7 +138,7 @@ async function similarProduct(req,res,next){
       response.responceFalse(res,"email are already store",categoryId);
     }
   } catch (error) {
-    console.log("error are in Similar product functiom : ");
+    console.log("------------Similar Product ------------- ");
   }
 }
 /**@searchProduct this function is help for search product by search name and description also .*/
@@ -101,7 +204,7 @@ async function productCountController(req,res){
 }
 /**@productFiltersController this filer help to filter controller with the help of filter functions */
 async function productFiltersController  (req, res) {
-  try {
+  try {   
     const { checked, radio } = req.body;
     let args = {};
     if (checked.length > 0) args.category = checked;
@@ -110,7 +213,6 @@ async function productFiltersController  (req, res) {
     response.successResponse(res,products)
   } catch (error) {
     console.log(error);
-   
     response.errorResponse(res,VALIDATION_ERROR,error)
   }
 };
@@ -146,7 +248,7 @@ async function updateProduct(req, res) {
     }
       response.successResponse(res,products)
   } catch (error) {
-    console.log("error are in update  function : ", error);
+    console.log(" error are in update  function : ", error);
     response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
   }
 }

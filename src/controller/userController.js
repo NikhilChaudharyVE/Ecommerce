@@ -9,12 +9,32 @@ exports.usersave = usersave;
 exports.login = login;
 exports.userAuth=userAuth;
 exports.forgetPass=forgetPass;
+exports.updateProfile=updateProfile;
 
-
-/**@forget pass fynction */
+/**@UpdateProfile Function  */
+async function updateProfile(req,res){
+  try {
+    console.log("here are request");
+    const { firstName,lastName, email, password, address, phone } = req.body;
+  const user = await User.findOne({email:email});
+  // password code 
+  const hashedPassword=password?await bcrypt.hashSync(password, salt):undefined;
+const UpdatedUser= await User.findByIdAndUpdate(user._id,{
+  firstName:firstName || user.firstName,
+  lastName:lastName|| user.lastName,
+  password:hashedPassword || user.password,
+  phone: phone || response.user.phone,
+  address : address || user.address,
+},{new:true});
+response.userResponce(res,"succesfuuly updated",UpdatedUser);
+} catch (error) {
+    console.log("error are in function :",error);
+     response.errorResponse(res,error.message,NOT_FOUND_ERROR_KEY);
+  }
+}
+/**@forget pass function */
 async function forgetPass(req,res){
   try {
-    console.log("inside the forget pass api ")
     const{email,answer,newPassword}=req.body;
     if(!email){
       response.errorResponse(res,NOT_FOUND_ERROR_KEY,error)
@@ -41,7 +61,6 @@ async function forgetPass(req,res){
 /**@procted route function in user auth function */
 async function userAuth(req,res){
   try {
-    console.log("are in protected Route function")
     response.userResponce(res,"userLogin",{ok:true})
   } catch (error) {
     console.log("error are in userAuth function : ",error);
@@ -54,7 +73,6 @@ async function usersave(req, res) {
   try {
     
     var { firstName, lastName, phone,address,answer, email, password } = req.body;
-    console.log("data are : ",firstName,lastName,phone,answer,password,address,email)
 
     var checkUser = await User.findOne({ email: email });
     if (!checkUser) {

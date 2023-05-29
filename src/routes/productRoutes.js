@@ -22,6 +22,12 @@ router.get("/product-list/:page", controller.productListController);
 // search functionality for search products
 router.get("/search/:keyword",controller.searchProduct);
 // similar products Route 
-router.get(`/similar_product/:pid/:cid`,controller.similarProduct)
-
+router.get(`/similar_product/:pid/:cid`,controller.similarProduct);
+// router for get all product on ythe basis of ctaegory
+router.get(`/allProuctOfCategory/:slug`,controller.getAllProductBySlug);
+// payment's Route
+// Token 
+router.get('/braintree/token',controller.braintreeTokenController)
+// Payment 
+router.post('/braintree/payment',authMidle,controller.paymentController)
 module.exports=router; 
